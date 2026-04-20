@@ -4,6 +4,8 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 HEADERS += estadisticasjugador.h\
+           estadisticasequipo.h
 
 SOURCES += main.cpp \
-           estadisticasjugador.cpp
+           estadisticasjugador.cpp \
+           estadisticasequipo.cpp
