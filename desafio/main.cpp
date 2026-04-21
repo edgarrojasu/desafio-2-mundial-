@@ -1,18 +1,18 @@
 #include <iostream>
-#include "estadisticasequipo.h"
+#include "estadisticaspartido.h"
 using namespace std;
 
 int main() {
-    estadisticasequipo e1;
-    e1.setGolesFavor(5);
-    e1.setPartidosGanados(2);
+    estadisticaspartido ep;
+    ep.setGolesFavor(2);
+    ep.setGolesContra(1);
+    ep.setPosesionBalon(60.5f);
+    ep.setConvocado(0, 9);
+    ep.setGolesConvocado(0, 2);
 
-    estadisticasequipo e2;
-    e2.setGolesFavor(3);
-    e2.setPartidosGanados(1);
-
-    e1 += e2;
-    cout << e1 << endl;
+    cout << ep << endl;
+    cout << "Camiseta convocado 0: " << ep.getConvocado(0) << endl;
+    cout << "Goles convocado 0: " << ep.getGolesConvocado(0) << endl;
 
     return 0;
 }
