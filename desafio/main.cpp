@@ -1,18 +1,31 @@
 #include <iostream>
-#include "estadisticaspartido.h"
+#include "lectorcsv.h"
 using namespace std;
 
 int main() {
-    estadisticaspartido ep;
-    ep.setGolesFavor(2);
-    ep.setGolesContra(1);
-    ep.setPosesionBalon(60.5f);
-    ep.setConvocado(0, 9);
-    ep.setGolesConvocado(0, 2);
+    equipo* equipos = new equipo[48];
+    int numEquipos = 0;
 
-    cout << ep << endl;
-    cout << "Camiseta convocado 0: " << ep.getConvocado(0) << endl;
-    cout << "Goles convocado 0: " << ep.getGolesConvocado(0) << endl;
+    lectorcsv lector("selecciones_clasificadas_mundial.csv");
 
+    if (lector.leerEquipos(equipos, numEquipos)) {
+        cout << "Equipos cargados: " << numEquipos << endl;
+
+        equipo copia = equipos[0];
+        cout << "\nCopia de France:" << endl;
+        cout << copia << endl;
+
+        copia.setPais("CopiaTest");
+        cout << "\nDespues de modificar la copia:" << endl;
+        cout << "Original: " << equipos[0].getPais() << endl;
+        cout << "Copia: " << copia.getPais() << endl;
+
+        jugador j1 = equipos[0].getPlantilla()[0];
+        j1.setNombre("nombreTest");
+        cout << "\nJugador original: " << equipos[0].getPlantilla()[0] << endl;
+        cout << "Jugador copia: " << j1 << endl;
+    }
+
+    delete[] equipos;
     return 0;
 }

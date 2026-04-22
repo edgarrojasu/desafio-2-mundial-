@@ -22,6 +22,20 @@ jugador::~jugador() {
     delete[] apellido;
 }
 
+jugador& jugador::operator=(const jugador& otro) {
+    if (this != &otro) {
+        delete[] nombre;
+        delete[] apellido;
+        nombre = new char[strlen(otro.nombre) + 1];
+        strcpy(nombre, otro.nombre);
+        apellido = new char[strlen(otro.apellido) + 1];
+        strcpy(apellido, otro.apellido);
+        numeroCamiseta = otro.numeroCamiseta;
+        stats = otro.stats;
+    }
+    return *this;
+}
+
 char* jugador::getNombre() const { return nombre; }
 char* jugador::getApellido() const { return apellido; }
 int jugador::getNumeroCamiseta() const { return numeroCamiseta; }

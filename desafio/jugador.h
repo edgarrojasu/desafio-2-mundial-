@@ -27,6 +27,7 @@ public:
     void setApellido(const char* valor);
     void setNumeroCamiseta(int valor);
 
+    jugador& operator=(const jugador& otro);
     bool operator==(const jugador& otro) const;
     friend ostream& operator<<(ostream& os, const jugador& j);
 };
