@@ -67,3 +67,18 @@ ostream& operator<<(ostream& os, const estadisticasequipo& stats)
        << " | Faltas: " << stats.faltas;
     return os;
 }
+
+estadisticasequipo& estadisticasequipo::operator=(const estadisticasequipo& otra)
+{
+    if (this != &otra) {
+        golesFavor = otra.golesFavor;
+        golesContra = otra.golesContra;
+        partidosGanados = otra.partidosGanados;
+        partidosEmpatados = otra.partidosEmpatados;
+        partidosPerdidos = otra.partidosPerdidos;
+        tarjetasAmarillas = otra.tarjetasAmarillas;
+        tarjetasRojas = otra.tarjetasRojas;
+        faltas = otra.faltas;
+    }
+    return *this;
+}

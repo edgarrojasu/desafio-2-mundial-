@@ -41,6 +41,7 @@ public:
     void setMinutosJugados(int indice, int valor);
 
     friend ostream& operator<<(ostream& os, const estadisticaspartido& stats);
+    estadisticaspartido& operator=(const estadisticaspartido& otra);
 };
 
 #endif // ESTADISTICASPARTIDO_H

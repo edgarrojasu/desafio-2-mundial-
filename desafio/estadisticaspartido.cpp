@@ -54,3 +54,21 @@ ostream& operator<<(ostream& os, const estadisticaspartido& stats) {
        << " | Posesion: " << stats.posesionBalon << "%";
     return os;
 }
+
+estadisticaspartido& estadisticaspartido::operator=(const estadisticaspartido& otra)
+{
+    if (this != &otra) {
+        golesFavor = otra.golesFavor;
+        golesContra = otra.golesContra;
+        posesionBalon = otra.posesionBalon;
+        for (int i = 0; i < 11; i++) {
+            convocados[i] = otra.convocados[i];
+            golesConvocados[i] = otra.golesConvocados[i];
+            tarjetasAmarillasConvocados[i] = otra.tarjetasAmarillasConvocados[i];
+            tarjetasRojasConvocados[i] = otra.tarjetasRojasConvocados[i];
+            faltasConvocados[i] = otra.faltasConvocados[i];
+            minutosJugados[i] = otra.minutosJugados[i];
+        }
+    }
+    return *this;
+}

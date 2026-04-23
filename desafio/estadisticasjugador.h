@@ -36,6 +36,7 @@ public:
     void setFaltas(int valor);
 
     estadisticasjugador& operator+=(const estadisticasjugador& otra);
+    estadisticasjugador& operator=(const estadisticasjugador& otra);
     friend ostream& operator<<(ostream& os, const estadisticasjugador& stats);
 };
 
