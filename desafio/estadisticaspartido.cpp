@@ -1,6 +1,7 @@
 #include "estadisticaspartido.h"
 
-estadisticaspartido::estadisticaspartido() {
+estadisticaspartido::estadisticaspartido()
+{
     golesFavor = 0;
     golesContra = 0;
     posesionBalon = 0.0f;
@@ -14,7 +15,8 @@ estadisticaspartido::estadisticaspartido() {
     }
 }
 
-estadisticaspartido::estadisticaspartido(const estadisticaspartido& otra) {
+estadisticaspartido::estadisticaspartido(const estadisticaspartido& otra)
+{
     golesFavor = otra.golesFavor;
     golesContra = otra.golesContra;
     posesionBalon = otra.posesionBalon;
@@ -48,7 +50,8 @@ void estadisticaspartido::setTarjetasRojasConvocado(int indice, int valor) { tar
 void estadisticaspartido::setFaltasConvocado(int indice, int valor) { faltasConvocados[indice] = valor; }
 void estadisticaspartido::setMinutosJugados(int indice, int valor) { minutosJugados[indice] = valor; }
 
-ostream& operator<<(ostream& os, const estadisticaspartido& stats) {
+ostream& operator<<(ostream& os, const estadisticaspartido& stats)
+{
     os << "GF: " << stats.golesFavor
        << " | GC: " << stats.golesContra
        << " | Posesion: " << stats.posesionBalon << "%";

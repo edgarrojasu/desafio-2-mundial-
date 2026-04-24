@@ -19,6 +19,13 @@ private:
     estadisticasequipo statsHistoricas;
     int puntos;
     int diferenciaGoles;
+    int puntosT;
+    int diferenciaGolesT;
+    int partidosGanadosT;
+    int partidosEmpatadosT;
+    int partidosPerdidosT;
+    int golesFavorT;
+    int golesContraT;
 
 public:
     equipo();
@@ -43,6 +50,22 @@ public:
     void setDiferenciaGoles(int valor);
 
     void generarPlantilla();
+
+    int getPuntosT() const;
+    int getDiferenciaGolesT() const;
+    int getGolesFavorT() const;
+    int getGolesContraT() const;
+    int getPartidosGanadosT() const;
+    int getPartidosEmpatadosT() const;
+    int getPartidosPerdidosT() const;
+
+    void setPuntosT(int valor);
+    void setDiferenciaGolesT(int valor);
+    void setGolesFavorT(int valor);
+    void setGolesContraT(int valor);
+    void setPartidosGanadosT(int valor);
+    void setPartidosEmpatadosT(int valor);
+    void setPartidosPerdidosT(int valor);
 
     equipo& operator=(const equipo& otro);
     bool operator<(const equipo& otro) const;

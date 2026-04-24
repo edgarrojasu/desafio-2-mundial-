@@ -8,7 +8,11 @@ HEADERS += estadisticasjugador.h\
            estadisticaspartido.h\
            jugador.h\
            equipo.h\
-           lectorcsv.h
+           lectorcsv.h\
+           partido.h\
+           simulador.h\
+           grupo.h\
+           sorteo.h
 
 SOURCES += main.cpp \
            estadisticasjugador.cpp \
@@ -16,4 +20,8 @@ SOURCES += main.cpp \
            estadisticaspartido.cpp\
            jugador.cpp\
            equipo.cpp\
-           lectorcsv.cpp
+           lectorcsv.cpp\
+           partido.cpp\
+           simulador.cpp\
+           grupo.cpp\
+           sorteo.cpp

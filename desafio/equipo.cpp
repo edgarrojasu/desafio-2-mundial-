@@ -12,6 +12,14 @@ equipo::equipo() {
     numJugadores = 0;
     puntos = 0;
     diferenciaGoles = 0;
+    puntosT = 0;
+    diferenciaGolesT = 0;
+    partidosGanadosT = 0;
+    partidosEmpatadosT = 0;
+    partidosPerdidosT = 0;
+    golesFavorT = 0;
+    golesContraT = 0;
+
 }
 
 equipo::equipo(const equipo& otro) {
@@ -27,20 +35,32 @@ equipo::equipo(const equipo& otro) {
     diferenciaGoles = otro.diferenciaGoles;
     statsHistoricas = otro.statsHistoricas;
     plantilla = new jugador[numJugadores];
-    for (int i = 0; i < numJugadores; i++) {
+
+    for (int i = 0; i < numJugadores; i++)
+    {
         plantilla[i] = otro.plantilla[i];
     }
+    puntosT = otro.puntosT;
+    diferenciaGolesT = otro.diferenciaGolesT;
+    partidosGanadosT = otro.partidosGanadosT;
+    partidosEmpatadosT = otro.partidosEmpatadosT;
+    partidosPerdidosT = otro.partidosPerdidosT;
+    golesFavorT = otro.golesFavorT;
+    golesContraT = otro.golesContraT;
 }
 
-equipo::~equipo() {
+equipo::~equipo()
+{
     delete[] pais;
     delete[] confederacion;
     delete[] directorTecnico;
     delete[] plantilla;
 }
 
-equipo& equipo::operator=(const equipo& otro) {
-    if (this != &otro) {
+equipo& equipo::operator=(const equipo& otro)
+{
+    if (this != &otro)
+    {
         delete[] pais;
         delete[] confederacion;
         delete[] directorTecnico;
@@ -57,7 +77,9 @@ equipo& equipo::operator=(const equipo& otro) {
         diferenciaGoles = otro.diferenciaGoles;
         statsHistoricas = otro.statsHistoricas;
         plantilla = new jugador[numJugadores];
-        for (int i = 0; i < numJugadores; i++) {
+
+        for (int i = 0; i < numJugadores; i++)
+        {
             plantilla[i] = otro.plantilla[i];
         }
     }
@@ -74,19 +96,22 @@ estadisticasequipo& equipo::getStatsHistoricas() { return statsHistoricas; }
 int equipo::getPuntos() const { return puntos; }
 int equipo::getDiferenciaGoles() const { return diferenciaGoles; }
 
-void equipo::setPais(const char* valor) {
+void equipo::setPais(const char* valor)
+{
     delete[] pais;
     pais = new char[strlen(valor) + 1];
     strcpy(pais, valor);
 }
 
-void equipo::setConfederacion(const char* valor) {
+void equipo::setConfederacion(const char* valor)
+{
     delete[] confederacion;
     confederacion = new char[strlen(valor) + 1];
     strcpy(confederacion, valor);
 }
 
-void equipo::setDirectorTecnico(const char* valor) {
+void equipo::setDirectorTecnico(const char* valor)
+{
     delete[] directorTecnico;
     directorTecnico = new char[strlen(valor) + 1];
     strcpy(directorTecnico, valor);
@@ -96,10 +121,12 @@ void equipo::setRankingFIFA(int valor) { rankingFIFA = valor; }
 void equipo::setPuntos(int valor) { puntos = valor; }
 void equipo::setDiferenciaGoles(int valor) { diferenciaGoles = valor; }
 
-void equipo::generarPlantilla() {
+void equipo::generarPlantilla()
+{
     numJugadores = 26;
     plantilla = new jugador[numJugadores];
-    for (int i = 0; i < numJugadores; i++) {
+    for (int i = 0; i < numJugadores; i++)
+    {
         string nombre = "nombre" + to_string(i + 1);
         string apellido = "apellido" + to_string(i + 1);
         plantilla[i].setNombre(nombre.c_str());
@@ -108,11 +135,13 @@ void equipo::generarPlantilla() {
     }
 }
 
-bool equipo::operator<(const equipo& otro) const {
+bool equipo::operator<(const equipo& otro) const
+{
     return rankingFIFA < otro.rankingFIFA;
 }
 
-ostream& operator<<(ostream& os, const equipo& e) {
+ostream& operator<<(ostream& os, const equipo& e)
+{
     os << "Pais: " << e.pais
        << " | Ranking: " << e.rankingFIFA
        << " | Confederacion: " << e.confederacion
@@ -121,3 +150,19 @@ ostream& operator<<(ostream& os, const equipo& e) {
        << "\n" << e.statsHistoricas;
     return os;
 }
+
+int equipo::getPuntosT() const { return puntosT; }
+int equipo::getDiferenciaGolesT() const { return diferenciaGolesT; }
+int equipo::getGolesFavorT() const { return golesFavorT; }
+int equipo::getGolesContraT() const { return golesContraT; }
+int equipo::getPartidosGanadosT() const { return partidosGanadosT; }
+int equipo::getPartidosEmpatadosT() const { return partidosEmpatadosT; }
+int equipo::getPartidosPerdidosT() const { return partidosPerdidosT; }
+
+void equipo::setPuntosT(int valor) { puntosT = valor; }
+void equipo::setDiferenciaGolesT(int valor) { diferenciaGolesT = valor; }
+void equipo::setGolesFavorT(int valor) { golesFavorT = valor; }
+void equipo::setGolesContraT(int valor) { golesContraT = valor; }
+void equipo::setPartidosGanadosT(int valor) { partidosGanadosT = valor; }
+void equipo::setPartidosEmpatadosT(int valor) { partidosEmpatadosT = valor; }
+void equipo::setPartidosPerdidosT(int valor) { partidosPerdidosT = valor; }

@@ -1,22 +1,27 @@
 #include "lectorcsv.h"
 
-lectorcsv::lectorcsv(const char* archivo) {
+lectorcsv::lectorcsv(const char* archivo)
+{
     nombreArchivo = new char[strlen(archivo) + 1];
     strcpy(nombreArchivo, archivo);
 }
 
-lectorcsv::lectorcsv(const lectorcsv& otro) {
+lectorcsv::lectorcsv(const lectorcsv& otro)
+{
     nombreArchivo = new char[strlen(otro.nombreArchivo) + 1];
     strcpy(nombreArchivo, otro.nombreArchivo);
 }
 
-lectorcsv::~lectorcsv() {
+lectorcsv::~lectorcsv()
+{
     delete[] nombreArchivo;
 }
 
-bool lectorcsv::leerEquipos(equipo* equipos, int& numEquipos) {
+bool lectorcsv::leerEquipos(equipo* equipos, int& numEquipos)
+{
     ifstream archivo(nombreArchivo);
-    if (!archivo.is_open()) {
+    if (!archivo.is_open())
+    {
         cout << "Error: no se pudo abrir " << nombreArchivo << endl;
         return false;
     }
@@ -26,7 +31,8 @@ bool lectorcsv::leerEquipos(equipo* equipos, int& numEquipos) {
     getline(archivo, linea);
 
     numEquipos = 0;
-    while (getline(archivo, linea) && numEquipos < 48) {
+    while (getline(archivo, linea) && numEquipos < 48)
+    {
         if (linea.empty()) continue;
 
         if (!linea.empty() && linea.back() == '\r')
@@ -65,12 +71,15 @@ bool lectorcsv::leerEquipos(equipo* equipos, int& numEquipos) {
     return true;
 }
 
-void lectorcsv::escribirJugadores(equipo* equipos, int numEquipos) {
+void lectorcsv::escribirJugadores(equipo* equipos, int numEquipos)
+{
     ofstream archivo("jugadores.csv");
     archivo << "pais;camiseta;nombre;apellido;goles;asistencias;minutosJugados;partidosJugados;tarjetasAmarillas;tarjetasRojas;faltas\n";
 
-    for (int i = 0; i < numEquipos; i++) {
-        for (int j = 0; j < equipos[i].getNumJugadores(); j++) {
+    for (int i = 0; i < numEquipos; i++)
+    {
+        for (int j = 0; j < equipos[i].getNumJugadores(); j++)
+        {
             jugador& jug = equipos[i].getPlantilla()[j];
             archivo << equipos[i].getPais()                  << ";"
                     << jug.getNumeroCamiseta()                << ";"
@@ -89,9 +98,11 @@ void lectorcsv::escribirJugadores(equipo* equipos, int numEquipos) {
     cout << "Archivo jugadores.csv generado correctamente." << endl;
 }
 
-void lectorcsv::leerJugadores(equipo* equipos, int numEquipos) {
+void lectorcsv::leerJugadores(equipo* equipos, int numEquipos)
+{
     ifstream archivo("jugadores.csv");
-    if (!archivo.is_open()) {
+    if (!archivo.is_open())
+    {
         cout << "Error: no se pudo abrir jugadores.csv" << endl;
         return;
     }
@@ -99,7 +110,8 @@ void lectorcsv::leerJugadores(equipo* equipos, int numEquipos) {
     string linea;
     getline(archivo, linea);
 
-    while (getline(archivo, linea)) {
+    while (getline(archivo, linea))
+    {
         if (linea.empty()) continue;
 
         if (!linea.empty() && linea.back() == '\r')
@@ -121,8 +133,10 @@ void lectorcsv::leerJugadores(equipo* equipos, int numEquipos) {
         getline(ss, rojas,       ';');
         getline(ss, faltas,      ';');
 
-        for (int i = 0; i < numEquipos; i++) {
-            if (pais == equipos[i].getPais()) {
+        for (int i = 0; i < numEquipos; i++)
+        {
+            if (pais == equipos[i].getPais())
+            {
                 int idx = stoi(camiseta) - 1;
                 jugador& jug = equipos[i].getPlantilla()[idx];
                 jug.getStats().setGoles(stoi(goles));
