@@ -126,6 +126,23 @@ bool sorteo::puedeAgregarseAlGrupo(grupo& g, equipo* e) const
 
 void sorteo::formarGrupos()
 {
+    equipo* usa = nullptr;
+    int usaIdx = -1;
+    for (int i = 0; i < tamBombos[0]; i++)
+    {
+        if (strcmp(bombos[0][i]->getPais(), "United States") == 0 || strcmp(bombos[0][i]->getPais(), "USA") == 0 ||
+            strcmp(bombos[0][i]->getPais(), "United States of America") == 0)
+        {
+            usa = bombos[0][i];
+            usaIdx = i;
+            break;
+        }
+    }
+    if (usa)
+    {
+        grupos[0].agregarEquipo(usa);
+    }
+
     for (int bombo = 0; bombo < 4; bombo++)
     {
         equipo* disponibles[12];
@@ -134,8 +151,13 @@ void sorteo::formarGrupos()
         for (int i = 0; i < tam; i++)
             disponibles[i] = bombos[bombo][i];
 
+        if (bombo == 0 && usaIdx >= 0)
+            usado[usaIdx] = true;
+
         for (int g = 0; g < numGrupos; g++)
         {
+            if (g == 0 && bombo == 0) continue;
+
             bool asignado = false;
             int intentos = 0;
 

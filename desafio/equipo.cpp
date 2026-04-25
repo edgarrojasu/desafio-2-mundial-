@@ -1,6 +1,7 @@
 #include "equipo.h"
 
-equipo::equipo() {
+equipo::equipo()
+{
     pais = new char[1];
     pais[0] = '\0';
     confederacion = new char[1];
@@ -19,10 +20,13 @@ equipo::equipo() {
     partidosPerdidosT = 0;
     golesFavorT = 0;
     golesContraT = 0;
+    promedioGFHistorico = 0.0f;
+    promedioGCHistorico = 0.0f;
 
 }
 
-equipo::equipo(const equipo& otro) {
+equipo::equipo(const equipo& otro)
+{
     pais = new char[strlen(otro.pais) + 1];
     strcpy(pais, otro.pais);
     confederacion = new char[strlen(otro.confederacion) + 1];
@@ -47,6 +51,8 @@ equipo::equipo(const equipo& otro) {
     partidosPerdidosT = otro.partidosPerdidosT;
     golesFavorT = otro.golesFavorT;
     golesContraT = otro.golesContraT;
+    promedioGFHistorico = otro.promedioGFHistorico;
+    promedioGCHistorico = otro.promedioGCHistorico;
 }
 
 equipo::~equipo()
@@ -77,6 +83,8 @@ equipo& equipo::operator=(const equipo& otro)
         diferenciaGoles = otro.diferenciaGoles;
         statsHistoricas = otro.statsHistoricas;
         plantilla = new jugador[numJugadores];
+        promedioGFHistorico = otro.promedioGFHistorico;
+        promedioGCHistorico = otro.promedioGCHistorico;
 
         for (int i = 0; i < numJugadores; i++)
         {
@@ -166,3 +174,7 @@ void equipo::setGolesContraT(int valor) { golesContraT = valor; }
 void equipo::setPartidosGanadosT(int valor) { partidosGanadosT = valor; }
 void equipo::setPartidosEmpatadosT(int valor) { partidosEmpatadosT = valor; }
 void equipo::setPartidosPerdidosT(int valor) { partidosPerdidosT = valor; }
+float equipo::getPromedioGFHistorico() const { return promedioGFHistorico; }
+float equipo::getPromedioGCHistorico() const { return promedioGCHistorico; }
+void equipo::setPromedioGFHistorico(float valor) { promedioGFHistorico = valor; }
+void equipo::setPromedioGCHistorico(float valor) { promedioGCHistorico = valor; }

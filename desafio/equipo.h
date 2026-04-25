@@ -26,6 +26,8 @@ private:
     int partidosPerdidosT;
     int golesFavorT;
     int golesContraT;
+    float promedioGFHistorico;
+    float promedioGCHistorico;
 
 public:
     equipo();
@@ -66,6 +68,10 @@ public:
     void setPartidosGanadosT(int valor);
     void setPartidosEmpatadosT(int valor);
     void setPartidosPerdidosT(int valor);
+    float getPromedioGFHistorico() const;
+    float getPromedioGCHistorico() const;
+    void setPromedioGFHistorico(float valor);
+    void setPromedioGCHistorico(float valor);
 
     equipo& operator=(const equipo& otro);
     bool operator<(const equipo& otro) const;

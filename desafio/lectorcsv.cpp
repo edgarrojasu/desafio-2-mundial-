@@ -64,6 +64,14 @@ bool lectorcsv::leerEquipos(equipo* equipos, int& numEquipos)
         equipos[numEquipos].getStatsHistoricas().setPartidosPerdidos(stoi(pp));
         equipos[numEquipos].generarPlantilla();
 
+        int pt = stoi(pg) + stoi(pe) + stoi(pp);
+        float promGF = (pt > 0) ? (float)stoi(gf) / pt : 1.35f;
+        float promGC = (pt > 0) ? (float)stoi(gc) / pt : 1.35f;
+        if (promGF <= 0) promGF = 0.1f;
+        if (promGC <= 0) promGC = 0.1f;
+        equipos[numEquipos].setPromedioGFHistorico(promGF);
+        equipos[numEquipos].setPromedioGCHistorico(promGC);
+
         numEquipos++;
     }
 

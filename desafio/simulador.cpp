@@ -1,4 +1,5 @@
 #include "simulador.h"
+#include <cmath>
 
 simulador::simulador()
 {
@@ -24,25 +25,14 @@ void simulador::setMu(float valor)    { mu    = valor; }
 
 float simulador::calcularLambda(equipo* equipoA, equipo* equipoB)
 {
-    int ptA = equipoA->getStatsHistoricas().getPartidosGanados()
-              + equipoA->getStatsHistoricas().getPartidosEmpatados()
-              + equipoA->getStatsHistoricas().getPartidosPerdidos();
-
-    int ptB = equipoB->getStatsHistoricas().getPartidosGanados()
-              + equipoB->getStatsHistoricas().getPartidosEmpatados()
-              + equipoB->getStatsHistoricas().getPartidosPerdidos();
-
-    float gfa = (ptA > 0)
-                    ? (float)equipoA->getStatsHistoricas().getGolesFavor() / ptA
-                    : mu;
-    float gcb = (ptB > 0)
-                    ? (float)equipoB->getStatsHistoricas().getGolesContra() / ptB
-                    : mu;
+    float gfa = equipoA->getPromedioGFHistorico();
+    float gcb = equipoB->getPromedioGCHistorico();
 
     if (gfa <= 0) gfa = 0.1f;
     if (gcb <= 0) gcb = 0.1f;
 
     float lambda = mu * pow(gfa / mu, alpha) * pow(gcb / mu, beta);
+
     return lambda;
 }
 
@@ -69,14 +59,28 @@ int simulador::simularFaltas(int faltasActuales)
     return 0;
 }
 
-float simulador::calcularPosesion(equipo* equipoA, equipo* equipoB)
+float simulador::calcularPosesion(equipo* equipoA, equipo* equipoB, int golesA, int golesB)
 {
-
     int rankA = equipoA->getRankingFIFA();
     int rankB = equipoB->getRankingFIFA();
-    float total = (float)(rankA + rankB);
-    float posesionA = (rankB / total) * 100.0f;
-    return posesionA;
+    float sqrtA = sqrt((float)rankA);
+    float sqrtB = sqrt((float)rankB);
+    float baseRank = sqrtB / (sqrtA + sqrtB);
+    int totalGoles = golesA + golesB;
+    float factorGoles = (totalGoles > 0)
+        ? (float)(golesA - golesB) / (float)totalGoles
+        : 0.0f;
+
+    float ruido = ((float)(rand() % 1001) / 1000.0f) - 0.5f;
+
+    float posesion = baseRank * 0.55f
+                   + (0.5f + factorGoles * 0.5f) * 0.35f
+                   + (0.5f + ruido) * 0.10f;
+
+    if (posesion < 0.25f) posesion = 0.25f;
+    if (posesion > 0.75f) posesion = 0.75f;
+
+    return posesion * 100.0f;
 }
 
 void simulador::seleccionarConvocados(equipo* e, int* indices)
@@ -112,32 +116,50 @@ void simulador::simular(partido& p, bool permitirEmpate)
         p.getStatsEquipo2().setConvocado(i, e2->getPlantilla()[convocados2[i]].getNumeroCamiseta());
     }
 
-    int golesEq1 = 0, golesEq2 = 0;
+    int golesEq1 = 0;
     int golesEsperados1 = generarPoissonAleatorio(lambda1);
-    int golesEsperados2 = generarPoissonAleatorio(lambda2);
-
     for (int i = 0; i < 11; i++)
+        p.getStatsEquipo1().setGolesConvocado(i, 0);
+
+    int intentos = 0;
+    while (golesEq1 < golesEsperados1 && intentos < 1000)
     {
-        int golesJug = 0;
-        float prob = (rand() % 10000) / 100.0f;
-        if (prob < 4.0f && golesEq1 < golesEsperados1)
+        for (int i = 0; i < 11 && golesEq1 < golesEsperados1; i++)
         {
-            golesJug = 1;
-            golesEq1++;
+            float prob = (rand() % 10000) / 100.0f;
+            if (prob < 4.0f)
+            {
+                p.getStatsEquipo1().setGolesConvocado(
+                    i,
+                    p.getStatsEquipo1().getGolesConvocado(i) + 1
+                    );
+                golesEq1++;
+            }
         }
-        p.getStatsEquipo1().setGolesConvocado(i, golesJug);
+        intentos++;
     }
 
+    int golesEq2 = 0;
+    int golesEsperados2 = generarPoissonAleatorio(lambda2);
     for (int i = 0; i < 11; i++)
+        p.getStatsEquipo2().setGolesConvocado(i, 0);
+
+    intentos = 0;
+    while (golesEq2 < golesEsperados2 && intentos < 1000)
     {
-        int golesJug = 0;
-        float prob = (rand() % 10000) / 100.0f;
-        if (prob < 4.0f && golesEq2 < golesEsperados2)
+        for (int i = 0; i < 11 && golesEq2 < golesEsperados2; i++)
         {
-            golesJug = 1;
-            golesEq2++;
+            float prob = (rand() % 10000) / 100.0f;
+            if (prob < 4.0f)
+            {
+                p.getStatsEquipo2().setGolesConvocado(
+                    i,
+                    p.getStatsEquipo2().getGolesConvocado(i) + 1
+                    );
+                golesEq2++;
+            }
         }
-        p.getStatsEquipo2().setGolesConvocado(i, golesJug);
+        intentos++;
     }
 
     p.getStatsEquipo1().setGolesFavor(golesEq1);
@@ -153,22 +175,25 @@ void simulador::simular(partido& p, bool permitirEmpate)
         int prob = rand() % total;
         if (prob < rankB)
         {
+            int jugGoleador = rand() % 11;
+            p.getStatsEquipo1().setGolesConvocado(
+                jugGoleador,
+                p.getStatsEquipo1().getGolesConvocado(jugGoleador) + 1
+                );
             p.getStatsEquipo1().setGolesFavor(golesEq1 + 1);
             p.getStatsEquipo1().setGolesContra(golesEq2);
             p.getStatsEquipo2().setGolesContra(golesEq1 + 1);
         }
         else
         {
+            int jugGoleador = rand() % 11;
+            p.getStatsEquipo2().setGolesConvocado(
+                jugGoleador,
+                p.getStatsEquipo2().getGolesConvocado(jugGoleador) + 1
+                );
             p.getStatsEquipo2().setGolesFavor(golesEq2 + 1);
             p.getStatsEquipo2().setGolesContra(golesEq1);
             p.getStatsEquipo1().setGolesContra(golesEq2 + 1);
-        }
-        p.setProrroga(true);
-
-        for (int i = 0; i < 11; i++)
-        {
-            p.getStatsEquipo1().setMinutosJugados(i, 120);
-            p.getStatsEquipo2().setMinutosJugados(i, 120);
         }
     }
     else
@@ -203,13 +228,13 @@ void simulador::simular(partido& p, bool permitirEmpate)
         p.getStatsEquipo2().setFaltasConvocado(i, faltas2);
     }
 
-    float posesion1 = calcularPosesion(e1, e2);
-    p.getStatsEquipo1().setPosesionBalon(posesion1);
-    p.getStatsEquipo2().setPosesionBalon(100.0f - posesion1);
-
     estadisticasequipo deltaE1, deltaE2;
     int gf1 = p.getStatsEquipo1().getGolesFavor();
     int gf2 = p.getStatsEquipo2().getGolesFavor();
+
+    float posesion1 = calcularPosesion(e1, e2, gf1, gf2);
+    p.getStatsEquipo1().setPosesionBalon(posesion1);
+    p.getStatsEquipo2().setPosesionBalon(100.0f - posesion1);
 
     deltaE1.setGolesFavor(gf1);
     deltaE1.setGolesContra(gf2);
@@ -239,7 +264,7 @@ void simulador::simular(partido& p, bool permitirEmpate)
     e1->getStatsHistoricas() += deltaE1;
     e2->getStatsHistoricas() += deltaE2;
     e1->setDiferenciaGolesT(e1->getDiferenciaGolesT() + gf1 - gf2);
-    e2->setDiferenciaGoles(e2->getDiferenciaGoles() + gf2 - gf1);
+    e2->setDiferenciaGolesT(e2->getDiferenciaGolesT() + gf2 - gf1);
 
     int minutos = p.isProrroga() ? 120 : 90;
     for (int i = 0; i < 11; i++)
@@ -297,15 +322,13 @@ ostream& operator<<(ostream& os, const simulador& s)
     return os;
 }
 
-int simulador::generarPoissonAleatorio(float lambda)
-{
-    float L = exp(-lambda);
+int simulador::generarPoissonAleatorio(float lambda) {
+    double L = exp(-(double)lambda);
+    double p = 1.0;
     int k = 0;
-    float p = 1.0f;
-    do
-    {
+    do {
         k++;
-        p *= (rand() % 10000) / 10000.0f;
+        p *= (double)rand() / RAND_MAX;
     } while (p > L);
     return k - 1;
 }

@@ -1,4 +1,5 @@
 #include "grupo.h"
+#include <iomanip>
 
 grupo::grupo()
 {
@@ -116,26 +117,36 @@ void grupo::ordenarEquipos()
     }
 }
 
-void grupo::tablaClasificacion() const
-{
+void grupo::tablaClasificacion() const {
     cout << "\nGRUPO " << letra << endl;
-    cout << "Equipo | PJ | PG | PE | PP | GF | GC | DG | PTS" << endl;
-    cout << "----------------------------------------------------" << endl;
+    cout << left
+         << setw(25) << "Equipo"
+         << setw(5)  << "PJ"
+         << setw(5)  << "PG"
+         << setw(5)  << "PE"
+         << setw(5)  << "PP"
+         << setw(5)  << "GF"
+         << setw(5)  << "GC"
+         << setw(5)  << "DG"
+         << setw(5)  << "PTS"
+         << endl;
+    cout << string(60, '-') << endl;
     for (int i = 0; i < numEquipos; i++)
     {
         equipo* e = equipos[i];
         int pj = e->getPartidosGanadosT()
                  + e->getPartidosEmpatadosT()
                  + e->getPartidosPerdidosT();
-        cout << e->getPais()
-             << " | " << pj
-             << " | " << e->getPartidosGanadosT()
-             << " | " << e->getPartidosEmpatadosT()
-             << " | " << e->getPartidosPerdidosT()
-             << " | " << e->getGolesFavorT()
-             << " | " << e->getGolesContraT()
-             << " | " << e->getDiferenciaGolesT()
-             << " | " << e->getPuntosT()
+        cout << left
+             << setw(25) << e->getPais()
+             << setw(5)  << pj
+             << setw(5)  << e->getPartidosGanadosT()
+             << setw(5)  << e->getPartidosEmpatadosT()
+             << setw(5)  << e->getPartidosPerdidosT()
+             << setw(5)  << e->getGolesFavorT()
+             << setw(5)  << e->getGolesContraT()
+             << setw(5)  << e->getDiferenciaGolesT()
+             << setw(5)  << e->getPuntosT()
              << endl;
     }
 }

@@ -5,7 +5,8 @@ estadisticaspartido::estadisticaspartido()
     golesFavor = 0;
     golesContra = 0;
     posesionBalon = 0.0f;
-    for (int i = 0; i < 11; i++) {
+    for (int i = 0; i < 11; i++)
+    {
         convocados[i] = 0;
         golesConvocados[i] = 0;
         tarjetasAmarillasConvocados[i] = 0;
@@ -20,7 +21,8 @@ estadisticaspartido::estadisticaspartido(const estadisticaspartido& otra)
     golesFavor = otra.golesFavor;
     golesContra = otra.golesContra;
     posesionBalon = otra.posesionBalon;
-    for (int i = 0; i < 11; i++) {
+    for (int i = 0; i < 11; i++)
+    {
         convocados[i] = otra.convocados[i];
         golesConvocados[i] = otra.golesConvocados[i];
         tarjetasAmarillasConvocados[i] = otra.tarjetasAmarillasConvocados[i];
@@ -60,11 +62,13 @@ ostream& operator<<(ostream& os, const estadisticaspartido& stats)
 
 estadisticaspartido& estadisticaspartido::operator=(const estadisticaspartido& otra)
 {
-    if (this != &otra) {
+    if (this != &otra)
+    {
         golesFavor = otra.golesFavor;
         golesContra = otra.golesContra;
         posesionBalon = otra.posesionBalon;
-        for (int i = 0; i < 11; i++) {
+        for (int i = 0; i < 11; i++)
+        {
             convocados[i] = otra.convocados[i];
             golesConvocados[i] = otra.golesConvocados[i];
             tarjetasAmarillasConvocados[i] = otra.tarjetasAmarillasConvocados[i];

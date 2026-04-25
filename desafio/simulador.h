@@ -29,7 +29,7 @@ public:
     int simularGoles(float lambda);
     int simularAmarillas(int amarillasActuales);
     int simularFaltas(int faltasActuales);
-    float calcularPosesion(equipo* equipoA, equipo* equipoB);
+    float calcularPosesion(equipo* equipoA, equipo* equipoB, int golesA, int golesB);
     void seleccionarConvocados(equipo* e, int* indices);
     void simular(partido& p, bool permitirEmpate);
     int generarPoissonAleatorio(float lambda);

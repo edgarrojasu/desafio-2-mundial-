@@ -8,7 +8,8 @@ partido::partido()
     fecha = new char[1]; fecha[0] = '\0';
     hora  = new char[1]; hora[0]  = '\0';
     sede  = new char[1]; sede[0]  = '\0';
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++)
+    {
         arbitros[i] = new char[1];
         arbitros[i][0] = '\0';
     }
