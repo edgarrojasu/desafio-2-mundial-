@@ -1,19 +1,23 @@
 #include "lectorcsv.h"
+#include "medidorrecursos.h"
 
 lectorcsv::lectorcsv(const char* archivo)
 {
     nombreArchivo = new char[strlen(archivo) + 1];
+    medidor.sumarMemoria(strlen(archivo) + 1);
     strcpy(nombreArchivo, archivo);
 }
 
 lectorcsv::lectorcsv(const lectorcsv& otro)
 {
     nombreArchivo = new char[strlen(otro.nombreArchivo) + 1];
+    medidor.sumarMemoria(strlen(otro.nombreArchivo) + 1);
     strcpy(nombreArchivo, otro.nombreArchivo);
 }
 
 lectorcsv::~lectorcsv()
 {
+    medidor.restarMemoria(strlen(nombreArchivo) + 1);
     delete[] nombreArchivo;
 }
 
@@ -33,6 +37,8 @@ bool lectorcsv::leerEquipos(equipo* equipos, int& numEquipos)
     numEquipos = 0;
     while (getline(archivo, linea) && numEquipos < 48)
     {
+        medidor.contarIteracion();
+        medidor.registrarLlamadaLibreria("ifstream::getline");
         if (linea.empty()) continue;
 
         if (!linea.empty() && linea.back() == '\r')

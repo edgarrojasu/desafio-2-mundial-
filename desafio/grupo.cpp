@@ -1,5 +1,6 @@
 #include "grupo.h"
 #include <iomanip>
+#include "medidorrecursos.h"
 
 grupo::grupo()
 {
@@ -117,7 +118,8 @@ void grupo::ordenarEquipos()
     }
 }
 
-void grupo::tablaClasificacion() const {
+void grupo::tablaClasificacion() const
+{
     cout << "\nGRUPO " << letra << endl;
     cout << left
          << setw(25) << "Equipo"

@@ -1,9 +1,11 @@
 #include "sorteo.h"
+#include "medidorrecursos.h"
 
 sorteo::sorteo()
 {
     numGrupos = 12;
     grupos = new grupo[numGrupos];
+    medidor.sumarMemoria(sizeof(grupo) * numGrupos);
     for (int i = 0; i < 4; i++) tamBombos[i] = 0;
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 12; j++)
@@ -18,6 +20,7 @@ sorteo::sorteo(const sorteo& otro)
 {
     numGrupos = otro.numGrupos;
     grupos = new grupo[numGrupos];
+    medidor.sumarMemoria(sizeof(grupo) * numGrupos);
     for (int i = 0; i < numGrupos; i++)
         grupos[i] = otro.grupos[i];
     for (int i = 0; i < 4; i++) {
@@ -29,6 +32,7 @@ sorteo::sorteo(const sorteo& otro)
 
 sorteo::~sorteo()
 {
+    medidor.restarMemoria(sizeof(grupo) * numGrupos);
     delete[] grupos;
 }
 
@@ -36,9 +40,11 @@ sorteo& sorteo::operator=(const sorteo& otro)
 {
     if (this != &otro)
     {
+        medidor.restarMemoria(sizeof(grupo) * numGrupos);
         delete[] grupos;
         numGrupos = otro.numGrupos;
         grupos = new grupo[numGrupos];
+        medidor.sumarMemoria(sizeof(grupo) * numGrupos);
         for (int i = 0; i < numGrupos; i++)
             grupos[i] = otro.grupos[i];
         for (int i = 0; i < 4; i++) {

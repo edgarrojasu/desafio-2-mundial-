@@ -1,5 +1,6 @@
 #include "torneo.h"
 #include <iomanip>
+#include "medidorrecursos.h"
 
 torneo::torneo()
 {
@@ -13,10 +14,15 @@ torneo::torneo()
 
 torneo::~torneo()
 {
+    medidor.restarMemoria(sizeof(equipo) * numEquipos);
+    medidor.restarMemoria(sizeof(sorteo));
     delete[] equipos;
     delete sorteoGrupos;
     for (int i = 0; i < 7; i++)
+    {
+        medidor.restarMemoria(sizeof(fixture));
         delete etapas[i];
+    }
 }
 
 torneo::torneo(const torneo& otro)
@@ -24,6 +30,7 @@ torneo::torneo(const torneo& otro)
     numEquipos = otro.numEquipos;
     numEtapas = otro.numEtapas;
     equipos = new equipo[numEquipos];
+    medidor.sumarMemoria(sizeof(equipo) * numEquipos);
     for (int i = 0; i < numEquipos; i++)
         equipos[i] = otro.equipos[i];
     sorteoGrupos = nullptr;
@@ -35,13 +42,19 @@ torneo& torneo::operator=(const torneo& otro)
 {
     if (this != &otro)
     {
+        medidor.restarMemoria(sizeof(equipo) * numEquipos);
+        medidor.restarMemoria(sizeof(sorteo));
         delete[] equipos;
         delete sorteoGrupos;
         for (int i = 0; i < 7; i++)
+        {
+            medidor.restarMemoria(sizeof(fixture));
             delete etapas[i];
+        }
         numEquipos = otro.numEquipos;
         numEtapas = otro.numEtapas;
         equipos = new equipo[numEquipos];
+        medidor.sumarMemoria(sizeof(equipo) * numEquipos);
         for (int i = 0; i < numEquipos; i++)
             equipos[i] = otro.equipos[i];
         sorteoGrupos = nullptr;
@@ -53,23 +66,31 @@ torneo& torneo::operator=(const torneo& otro)
 
 void torneo::cargarEquipos(const char* archivo)
 {
+    medidor.resetear();
     equipos = new equipo[48];
+    medidor.sumarMemoria(sizeof(equipo) * 48);
     lectorcsv lector(archivo);
     lector.leerEquipos(equipos, numEquipos);
     cout << "Equipos cargados: " << numEquipos << endl;
+    medidor.imprimir();
 }
 
 void torneo::conformarGrupos()
 {
+    medidor.resetear();
     sorteoGrupos = new sorteo();
+    medidor.sumarMemoria(sizeof(sorteo));
     sorteoGrupos->armarBombos(equipos, numEquipos);
     sorteoGrupos->formarGrupos();
     sorteoGrupos->imprimirGrupos();
+    medidor.imprimir();
 }
 
 void torneo::simularFaseGrupos()
 {
+    medidor.resetear();
     etapas[0] = new fixture("Fase de Grupos");
+    medidor.sumarMemoria(sizeof(fixture));
 
     int partidosPorDia[19] = {0};
     int ultimoDia[48];
@@ -122,6 +143,7 @@ void torneo::simularFaseGrupos()
             fecha[10] = '\0';
 
             partido* p = new partido();
+            medidor.sumarMemoria(sizeof(partido));
             p->setFecha(fecha);
             p->setHora("00:00");
             p->setSede("nombreSede");
@@ -148,6 +170,7 @@ void torneo::simularFaseGrupos()
         sorteoGrupos->getGrupo(g).ordenarEquipos();
 
     imprimirTablas();
+    medidor.imprimir();
 }
 
 void torneo::imprimirTablas() const
@@ -158,89 +181,204 @@ void torneo::imprimirTablas() const
 
 void torneo::configurarDieciseisavos()
 {
+    medidor.resetear();
     etapas[1] = new fixture("Dieciseisavos de Final");
+    medidor.sumarMemoria(sizeof(fixture));
 
     equipo* primeros[12];
     equipo* segundos[12];
     equipo* terceros[12];
 
+    // Guardar de que grupo viene cada equipo (indice de grupo)
+    int grupoPrimero[12], grupoSegundo[12], grupoTercero[12];
+
     for (int g = 0; g < 12; g++)
     {
-        primeros[g]  = sorteoGrupos->getGrupo(g).getEquipo(0);
-        segundos[g]  = sorteoGrupos->getGrupo(g).getEquipo(1);
-        terceros[g]  = sorteoGrupos->getGrupo(g).getEquipo(2);
+        primeros[g]      = sorteoGrupos->getGrupo(g).getEquipo(0);
+        segundos[g]      = sorteoGrupos->getGrupo(g).getEquipo(1);
+        terceros[g]      = sorteoGrupos->getGrupo(g).getEquipo(2);
+        grupoPrimero[g]  = g;
+        grupoSegundo[g]  = g;
+        grupoTercero[g]  = g;
     }
 
+    // Ordenar terceros de mejor a peor (para quedarse con los 8 mejores)
     for (int i = 0; i < 11; i++)
     {
         for (int j = 0; j < 11 - i; j++)
         {
+            bool intercambiar = false;
             if (terceros[j]->getPuntosT() < terceros[j+1]->getPuntosT())
+                intercambiar = true;
+            else if (terceros[j]->getPuntosT() == terceros[j+1]->getPuntosT() &&
+                     terceros[j]->getDiferenciaGolesT() < terceros[j+1]->getDiferenciaGolesT())
+                intercambiar = true;
+
+            if (intercambiar)
             {
-                equipo* tmp = terceros[j];
-                terceros[j] = terceros[j+1];
-                terceros[j+1] = tmp;
+                equipo* tmp  = terceros[j];   terceros[j]      = terceros[j+1];   terceros[j+1]  = tmp;
+                int     gtmp = grupoTercero[j]; grupoTercero[j] = grupoTercero[j+1]; grupoTercero[j+1] = gtmp;
             }
         }
     }
+    // Solo los 8 primeros terceros clasifican
+    // terceros[0..7] son los 8 mejores, grupoTercero[0..7] sus grupos de origen
 
+    // Ordenar segundos de peor a mejor (para identificar los 4 peores)
+    for (int i = 0; i < 11; i++)
+    {
+        for (int j = 0; j < 11 - i; j++)
+        {
+            bool intercambiar = false;
+            if (segundos[j]->getPuntosT() > segundos[j+1]->getPuntosT())
+                intercambiar = true;
+            else if (segundos[j]->getPuntosT() == segundos[j+1]->getPuntosT() &&
+                     segundos[j]->getDiferenciaGolesT() > segundos[j+1]->getDiferenciaGolesT())
+                intercambiar = true;
+
+            if (intercambiar)
+            {
+                equipo* tmp  = segundos[j];   segundos[j]      = segundos[j+1];   segundos[j+1]  = tmp;
+                int     gtmp = grupoSegundo[j]; grupoSegundo[j] = grupoSegundo[j+1]; grupoSegundo[j+1] = gtmp;
+            }
+        }
+    }
+    // segundos[0..3]  = 4 peores segundos  (enfrentaran a primeros)
+    // segundos[4..11] = 8 mejores segundos (se enfrentan entre si)
+
+    // Lambda para verificar que dos equipos no compartieron grupo
+    auto mismoGrupo = [&](int g1, int g2) -> bool { return g1 == g2; };
+
+    // ── Bloque 1: 8 primeros vs 8 mejores terceros ──
+    // Emparejar primero[i] con tercero[j] tal que no sean del mismo grupo
+    bool usadoTercero[8] = {false};
     for (int i = 0; i < 8; i++)
     {
-        partido* p = new partido();
-        p->setFecha("10/07/2026");
-        p->setHora("00:00");
-        p->setSede("nombreSede");
-        p->setArbitro(0, "codArbitro1");
-        p->setArbitro(1, "codArbitro2");
-        p->setArbitro(2, "codArbitro3");
-        p->setEquipo1(primeros[i]);
-        p->setEquipo2(terceros[i]);
-        etapas[1]->agregarPartido(p);
-    }
-
-    for (int i = 0; i < 11; i++)
-    {
-        for (int j = 0; j < 11 - i; j++)
+        bool asignado = false;
+        // Intentar en orden
+        for (int j = 0; j < 8 && !asignado; j++)
         {
-            if (segundos[j]->getPuntosT() > segundos[j+1]->getPuntosT())
+            if (!usadoTercero[j] && !mismoGrupo(grupoPrimero[i], grupoTercero[j]))
             {
-                equipo* tmp = segundos[j];
-                segundos[j] = segundos[j+1];
-                segundos[j+1] = tmp;
+                partido* p = new partido();
+                medidor.sumarMemoria(sizeof(partido));
+                p->setFecha("10/07/2026"); p->setHora("00:00"); p->setSede("nombreSede");
+                p->setArbitro(0,"codArbitro1"); p->setArbitro(1,"codArbitro2"); p->setArbitro(2,"codArbitro3");
+                p->setEquipo1(primeros[i]);
+                p->setEquipo2(terceros[j]);
+                etapas[1]->agregarPartido(p);
+                usadoTercero[j] = true;
+                asignado = true;
+            }
+        }
+        // Si no se encontro pareja valida, usar el primer tercero disponible (fallback)
+        if (!asignado)
+        {
+            for (int j = 0; j < 8 && !asignado; j++)
+            {
+                if (!usadoTercero[j])
+                {
+                    partido* p = new partido();
+                    medidor.sumarMemoria(sizeof(partido));
+                    p->setFecha("10/07/2026"); p->setHora("00:00"); p->setSede("nombreSede");
+                    p->setArbitro(0,"codArbitro1"); p->setArbitro(1,"codArbitro2"); p->setArbitro(2,"codArbitro3");
+                    p->setEquipo1(primeros[i]);
+                    p->setEquipo2(terceros[j]);
+                    etapas[1]->agregarPartido(p);
+                    usadoTercero[j] = true;
+                    asignado = true;
+                }
             }
         }
     }
 
-    for (int i = 0; i < 4; i++)
+    // ── Bloque 2: 4 primeros restantes vs 4 peores segundos ──
+    // primeros[8..11] vs segundos[0..3], respetando restriccion de grupo
+    bool usadoPeorSegundo[4] = {false};
+    for (int i = 8; i < 12; i++)
     {
-        partido* p = new partido();
-        p->setFecha("10/07/2026");
-        p->setHora("00:00");
-        p->setSede("nombreSede");
-        p->setArbitro(0, "codArbitro1");
-        p->setArbitro(1, "codArbitro2");
-        p->setArbitro(2, "codArbitro3");
-        p->setEquipo1(primeros[8 + i]);
-        p->setEquipo2(segundos[i]);
-        etapas[1]->agregarPartido(p);
+        bool asignado = false;
+        for (int j = 0; j < 4 && !asignado; j++)
+        {
+            if (!usadoPeorSegundo[j] && !mismoGrupo(grupoPrimero[i], grupoSegundo[j]))
+            {
+                partido* p = new partido();
+                medidor.sumarMemoria(sizeof(partido));
+                p->setFecha("10/07/2026"); p->setHora("00:00"); p->setSede("nombreSede");
+                p->setArbitro(0,"codArbitro1"); p->setArbitro(1,"codArbitro2"); p->setArbitro(2,"codArbitro3");
+                p->setEquipo1(primeros[i]);
+                p->setEquipo2(segundos[j]);
+                etapas[1]->agregarPartido(p);
+                usadoPeorSegundo[j] = true;
+                asignado = true;
+            }
+        }
+        if (!asignado)
+        {
+            for (int j = 0; j < 4 && !asignado; j++)
+            {
+                if (!usadoPeorSegundo[j])
+                {
+                    partido* p = new partido();
+                    medidor.sumarMemoria(sizeof(partido));
+                    p->setFecha("10/07/2026"); p->setHora("00:00"); p->setSede("nombreSede");
+                    p->setArbitro(0,"codArbitro1"); p->setArbitro(1,"codArbitro2"); p->setArbitro(2,"codArbitro3");
+                    p->setEquipo1(primeros[i]);
+                    p->setEquipo2(segundos[j]);
+                    etapas[1]->agregarPartido(p);
+                    usadoPeorSegundo[j] = true;
+                    asignado = true;
+                }
+            }
+        }
     }
 
-    for (int i = 4; i < 12; i += 2)
+    // ── Bloque 3: 8 mejores segundos entre si ──
+    // segundos[4..11], emparejar evitando mismo grupo
+    bool usadoMejorSegundo[8] = {false};
+    for (int i = 4; i < 12; i++)
     {
-        partido* p = new partido();
-        p->setFecha("10/07/2026");
-        p->setHora("00:00");
-        p->setSede("nombreSede");
-        p->setArbitro(0, "codArbitro1");
-        p->setArbitro(1, "codArbitro2");
-        p->setArbitro(2, "codArbitro3");
-        p->setEquipo1(segundos[i]);
-        p->setEquipo2(segundos[i+1]);
-        etapas[1]->agregarPartido(p);
+        if (usadoMejorSegundo[i - 4]) continue;
+        bool asignado = false;
+        for (int j = i + 1; j < 12 && !asignado; j++)
+        {
+            if (!usadoMejorSegundo[j - 4] && !mismoGrupo(grupoSegundo[i], grupoSegundo[j]))
+            {
+                partido* p = new partido();
+                medidor.sumarMemoria(sizeof(partido));
+                p->setFecha("10/07/2026"); p->setHora("00:00"); p->setSede("nombreSede");
+                p->setArbitro(0,"codArbitro1"); p->setArbitro(1,"codArbitro2"); p->setArbitro(2,"codArbitro3");
+                p->setEquipo1(segundos[i]);
+                p->setEquipo2(segundos[j]);
+                etapas[1]->agregarPartido(p);
+                usadoMejorSegundo[i - 4] = true;
+                usadoMejorSegundo[j - 4] = true;
+                asignado = true;
+            }
+        }
+        if (!asignado)
+        {
+            // Fallback: emparejar con el primer disponible
+            for (int j = i + 1; j < 12 && !asignado; j++)
+            {
+                if (!usadoMejorSegundo[j - 4])
+                {
+                    partido* p = new partido();
+                    medidor.sumarMemoria(sizeof(partido));
+                    p->setFecha("10/07/2026"); p->setHora("00:00"); p->setSede("nombreSede");
+                    p->setArbitro(0,"codArbitro1"); p->setArbitro(1,"codArbitro2"); p->setArbitro(2,"codArbitro3");
+                    p->setEquipo1(segundos[i]);
+                    p->setEquipo2(segundos[j]);
+                    etapas[1]->agregarPartido(p);
+                    usadoMejorSegundo[i - 4] = true;
+                    usadoMejorSegundo[j - 4] = true;
+                    asignado = true;
+                }
+            }
+        }
     }
 
     cout << "\n=== Partidos configurados para Dieciseisavos ===" << endl;
-
     for (int i = 0; i < etapas[1]->getNumPartidos(); i++)
     {
         partido* p = etapas[1]->getPartido(i);
@@ -248,10 +386,12 @@ void torneo::configurarDieciseisavos()
              << " vs "
              << p->getEquipo2()->getPais() << endl;
     }
+    medidor.imprimir();
 }
 
 void torneo::simularEtapa(int indice)
 {
+    medidor.resetear();
     if (!etapas[indice]) return;
     etapas[indice]->simularEtapa(sim, false);
     etapas[indice]->imprimirResultados();
@@ -263,16 +403,20 @@ void torneo::simularEtapa(int indice)
         if (ganador)
             etapas[indice]->agregarClasificado(ganador);
     }
+    medidor.imprimir();
 }
 
 void torneo::simularTorneo()
 {
+    medidor.resetear();
     simularEtapa(1);
 
     etapas[2] = new fixture("Octavos de Final");
+    medidor.sumarMemoria(sizeof(fixture));
     for (int i = 0; i < etapas[1]->getNumClasificados(); i += 2)
     {
         partido* p = new partido();
+        medidor.sumarMemoria(sizeof(partido));
         p->setFecha("10/07/2026");
         p->setHora("00:00");
         p->setSede("nombreSede");
@@ -286,9 +430,11 @@ void torneo::simularTorneo()
     simularEtapa(2);
 
     etapas[3] = new fixture("Cuartos de Final");
+    medidor.sumarMemoria(sizeof(fixture));
     for (int i = 0; i < etapas[2]->getNumClasificados(); i += 2)
     {
         partido* p = new partido();
+        medidor.sumarMemoria(sizeof(partido));
         p->setFecha("10/07/2026");
         p->setHora("00:00");
         p->setSede("nombreSede");
@@ -302,9 +448,11 @@ void torneo::simularTorneo()
     simularEtapa(3);
 
     etapas[4] = new fixture("Semifinales");
+    medidor.sumarMemoria(sizeof(fixture));
     for (int i = 0; i < etapas[3]->getNumClasificados(); i += 2)
     {
         partido* p = new partido();
+        medidor.sumarMemoria(sizeof(partido));
         p->setFecha("10/07/2026");
         p->setHora("00:00");
         p->setSede("nombreSede");
@@ -318,6 +466,7 @@ void torneo::simularTorneo()
     simularEtapa(4);
 
     etapas[5] = new fixture("Tercer Puesto");
+    medidor.sumarMemoria(sizeof(fixture));
     equipo* perdedor1 = nullptr;
     equipo* perdedor2 = nullptr;
 
@@ -335,6 +484,7 @@ void torneo::simularTorneo()
     if (perdedor1 && perdedor2)
     {
         partido* p = new partido();
+        medidor.sumarMemoria(sizeof(partido));
         p->setFecha("10/07/2026");
         p->setHora("00:00");
         p->setSede("nombreSede");
@@ -348,9 +498,11 @@ void torneo::simularTorneo()
     simularEtapa(5);
 
     etapas[6] = new fixture("Final");
+    medidor.sumarMemoria(sizeof(fixture));
     if (etapas[4]->getNumClasificados() >= 2)
     {
         partido* p = new partido();
+        medidor.sumarMemoria(sizeof(partido));
         p->setFecha("10/07/2026");
         p->setHora("00:00");
         p->setSede("nombreSede");
@@ -362,10 +514,12 @@ void torneo::simularTorneo()
         etapas[6]->agregarPartido(p);
     }
     simularEtapa(6);
+    medidor.imprimir();
 }
 
 void torneo::generarEstadisticas()
 {
+    medidor.resetear();
     cout << "\n========================================" << endl;
     cout << "    ESTADISTICAS FINALES DEL TORNEO" << endl;
     cout << "========================================" << endl;
@@ -415,27 +569,36 @@ void torneo::generarEstadisticas()
     }
 
     cout << "\n3. Top 3 goleadores del torneo:" << endl;
-    equipo* topEquipo[3] = {nullptr};
-    int topCamiseta[3] = {0};
-    int topGoles[3] = {0};
+    equipo* topEquipo[3]   = {nullptr, nullptr, nullptr};
+    int     topCamiseta[3] = {0, 0, 0};
+    int     topGoles[3]    = {0, 0, 0};
 
     for (int e = 0; e < numEquipos; e++)
     {
         for (int j = 0; j < equipos[e].getNumJugadores(); j++)
         {
             int g = equipos[e].getPlantilla()[j].getStats().getGoles();
-            if (g > topGoles[2])
+            // Insertar en el top-3 si supera alguna posicion
+            if (g > topGoles[0])
             {
-                topGoles[2] = g;
-                topEquipo[2] = &equipos[e];
+                topGoles[2]    = topGoles[1];    topEquipo[2]   = topEquipo[1];    topCamiseta[2] = topCamiseta[1];
+                topGoles[1]    = topGoles[0];    topEquipo[1]   = topEquipo[0];    topCamiseta[1] = topCamiseta[0];
+                topGoles[0]    = g;
+                topEquipo[0]   = &equipos[e];
+                topCamiseta[0] = equipos[e].getPlantilla()[j].getNumeroCamiseta();
+            }
+            else if (g > topGoles[1])
+            {
+                topGoles[2]    = topGoles[1];    topEquipo[2]   = topEquipo[1];    topCamiseta[2] = topCamiseta[1];
+                topGoles[1]    = g;
+                topEquipo[1]   = &equipos[e];
+                topCamiseta[1] = equipos[e].getPlantilla()[j].getNumeroCamiseta();
+            }
+            else if (g > topGoles[2])
+            {
+                topGoles[2]    = g;
+                topEquipo[2]   = &equipos[e];
                 topCamiseta[2] = equipos[e].getPlantilla()[j].getNumeroCamiseta();
-                // ordenar
-                for (int k = 2; k > 0 && topGoles[k] > topGoles[k-1]; k--)
-                {
-                    int tg = topGoles[k]; topGoles[k] = topGoles[k-1]; topGoles[k-1] = tg;
-                    int tc = topCamiseta[k]; topCamiseta[k] = topCamiseta[k-1]; topCamiseta[k-1] = tc;
-                    equipo* te = topEquipo[k]; topEquipo[k] = topEquipo[k-1]; topEquipo[k-1] = te;
-                }
             }
         }
     }
@@ -483,9 +646,13 @@ void torneo::generarEstadisticas()
         cout << "  " << etapasNombres[e] << ": " << confs[maxIdx]
              << " (" << conteo[maxIdx] << " equipos)" << endl;
     }
+    medidor.imprimir();
 }
 
 ostream& operator<<(ostream& os, const torneo& t) {
     os << "Torneo FIFA 2026 | Equipos: " << t.numEquipos << endl;
     return os;
 }
+
+equipo* torneo::getEquipos() const { return equipos; }
+int torneo::getNumEquipos() const { return numEquipos; }

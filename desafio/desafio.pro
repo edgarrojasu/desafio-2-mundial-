@@ -14,7 +14,8 @@ HEADERS += estadisticasjugador.h\
            grupo.h\
            sorteo.h\
            fixture.h\
-           torneo.h
+           torneo.h\
+           medidorrecursos.h
 
 SOURCES += main.cpp \
            estadisticasjugador.cpp \
@@ -28,4 +29,5 @@ SOURCES += main.cpp \
            grupo.cpp\
            sorteo.cpp\
            fixture.cpp\
-           torneo.cpp
+           torneo.cpp\
+           medidorrecursos.cpp

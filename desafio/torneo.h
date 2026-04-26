@@ -34,6 +34,8 @@ public:
 
     torneo& operator=(const torneo& otro);
     friend ostream& operator<<(ostream& os, const torneo& t);
+    equipo* getEquipos() const;
+    int getNumEquipos() const;
 };
 
 #endif // TORNEO_H

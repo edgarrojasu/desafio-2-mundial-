@@ -1,4 +1,5 @@
 #include "estadisticasjugador.h"
+#include "medidorrecursos.h"
 
 estadisticasjugador::estadisticasjugador()
 {

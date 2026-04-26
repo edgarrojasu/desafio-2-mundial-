@@ -1,4 +1,5 @@
 #include "estadisticaspartido.h"
+#include "medidorrecursos.h"
 
 estadisticaspartido::estadisticaspartido()
 {

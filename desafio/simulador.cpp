@@ -1,5 +1,6 @@
 #include "simulador.h"
 #include <cmath>
+#include "medidorrecursos.h"
 
 simulador::simulador()
 {
@@ -90,6 +91,7 @@ void simulador::seleccionarConvocados(equipo* e, int* indices)
 
     for (int i = 0; i < 11; i++)
     {
+        medidor.contarIteracion();
         int j = i + rand() % (26 - i);
         int temp = disponibles[i];
         disponibles[i] = disponibles[j];
@@ -124,6 +126,7 @@ void simulador::simular(partido& p, bool permitirEmpate)
     int intentos = 0;
     while (golesEq1 < golesEsperados1 && intentos < 1000)
     {
+        medidor.contarIteracion();
         for (int i = 0; i < 11 && golesEq1 < golesEsperados1; i++)
         {
             float prob = (rand() % 10000) / 100.0f;
@@ -194,6 +197,13 @@ void simulador::simular(partido& p, bool permitirEmpate)
             p.getStatsEquipo2().setGolesFavor(golesEq2 + 1);
             p.getStatsEquipo2().setGolesContra(golesEq1);
             p.getStatsEquipo1().setGolesContra(golesEq2 + 1);
+        }
+        // El partido se resolvio en prorroga: marcar flag y asignar 120 minutos
+        p.setProrroga(true);
+        for (int i = 0; i < 11; i++)
+        {
+            p.getStatsEquipo1().setMinutosJugados(i, 120);
+            p.getStatsEquipo2().setMinutosJugados(i, 120);
         }
     }
     else
@@ -329,6 +339,8 @@ int simulador::generarPoissonAleatorio(float lambda) {
     do {
         k++;
         p *= (double)rand() / RAND_MAX;
+        medidor.contarIteracion();
+        medidor.registrarLlamadaLibreria("rand()");
     } while (p > L);
     return k - 1;
 }

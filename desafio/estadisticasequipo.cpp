@@ -1,4 +1,5 @@
 #include "estadisticasequipo.h"
+#include "medidorrecursos.h"
 
 estadisticasequipo::estadisticasequipo()
 {

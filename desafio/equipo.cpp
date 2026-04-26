@@ -1,12 +1,16 @@
 #include "equipo.h"
+#include "medidorrecursos.h"
 
 equipo::equipo()
 {
     pais = new char[1];
+    medidor.sumarMemoria(1);
     pais[0] = '\0';
     confederacion = new char[1];
+    medidor.sumarMemoria(1);
     confederacion[0] = '\0';
     directorTecnico = new char[1];
+    medidor.sumarMemoria(1);
     directorTecnico[0] = '\0';
     rankingFIFA = 0;
     plantilla = nullptr;
@@ -28,10 +32,13 @@ equipo::equipo()
 equipo::equipo(const equipo& otro)
 {
     pais = new char[strlen(otro.pais) + 1];
+    medidor.sumarMemoria(strlen(otro.pais) + 1);
     strcpy(pais, otro.pais);
     confederacion = new char[strlen(otro.confederacion) + 1];
+    medidor.sumarMemoria(strlen(otro.confederacion) + 1);
     strcpy(confederacion, otro.confederacion);
     directorTecnico = new char[strlen(otro.directorTecnico) + 1];
+    medidor.sumarMemoria(strlen(otro.directorTecnico) + 1);
     strcpy(directorTecnico, otro.directorTecnico);
     rankingFIFA = otro.rankingFIFA;
     numJugadores = otro.numJugadores;
@@ -39,6 +46,8 @@ equipo::equipo(const equipo& otro)
     diferenciaGoles = otro.diferenciaGoles;
     statsHistoricas = otro.statsHistoricas;
     plantilla = new jugador[numJugadores];
+    medidor.sumarMemoria(sizeof(jugador) * numJugadores);
+
 
     for (int i = 0; i < numJugadores; i++)
     {
@@ -57,6 +66,10 @@ equipo::equipo(const equipo& otro)
 
 equipo::~equipo()
 {
+    medidor.restarMemoria(strlen(pais) + 1);
+    medidor.restarMemoria(strlen(confederacion) + 1);
+    medidor.restarMemoria(strlen(directorTecnico) + 1);
+    medidor.restarMemoria(sizeof(jugador) * numJugadores);
     delete[] pais;
     delete[] confederacion;
     delete[] directorTecnico;
@@ -67,15 +80,22 @@ equipo& equipo::operator=(const equipo& otro)
 {
     if (this != &otro)
     {
+        medidor.restarMemoria(strlen(pais) + 1);
+        medidor.restarMemoria(strlen(confederacion) + 1);
+        medidor.restarMemoria(strlen(directorTecnico) + 1);
+        medidor.restarMemoria(sizeof(jugador) * numJugadores);
         delete[] pais;
         delete[] confederacion;
         delete[] directorTecnico;
         delete[] plantilla;
         pais = new char[strlen(otro.pais) + 1];
+        medidor.sumarMemoria(strlen(otro.pais) + 1);
         strcpy(pais, otro.pais);
         confederacion = new char[strlen(otro.confederacion) + 1];
+        medidor.sumarMemoria(strlen(otro.confederacion) + 1);
         strcpy(confederacion, otro.confederacion);
         directorTecnico = new char[strlen(otro.directorTecnico) + 1];
+        medidor.sumarMemoria(strlen(otro.directorTecnico) + 1);
         strcpy(directorTecnico, otro.directorTecnico);
         rankingFIFA = otro.rankingFIFA;
         numJugadores = otro.numJugadores;
@@ -83,6 +103,7 @@ equipo& equipo::operator=(const equipo& otro)
         diferenciaGoles = otro.diferenciaGoles;
         statsHistoricas = otro.statsHistoricas;
         plantilla = new jugador[numJugadores];
+        medidor.sumarMemoria(sizeof(jugador) * numJugadores);
         promedioGFHistorico = otro.promedioGFHistorico;
         promedioGCHistorico = otro.promedioGCHistorico;
 
@@ -106,22 +127,28 @@ int equipo::getDiferenciaGoles() const { return diferenciaGoles; }
 
 void equipo::setPais(const char* valor)
 {
+    medidor.restarMemoria(strlen(pais) + 1);
     delete[] pais;
     pais = new char[strlen(valor) + 1];
+    medidor.sumarMemoria(strlen(valor) + 1);
     strcpy(pais, valor);
 }
 
 void equipo::setConfederacion(const char* valor)
 {
+    medidor.restarMemoria(strlen(confederacion) + 1);
     delete[] confederacion;
     confederacion = new char[strlen(valor) + 1];
+    medidor.sumarMemoria(strlen(valor) + 1);
     strcpy(confederacion, valor);
 }
 
 void equipo::setDirectorTecnico(const char* valor)
 {
+    medidor.restarMemoria(strlen(directorTecnico) + 1);
     delete[] directorTecnico;
     directorTecnico = new char[strlen(valor) + 1];
+    medidor.sumarMemoria(strlen(valor) + 1);
     strcpy(directorTecnico, valor);
 }
 
@@ -133,6 +160,7 @@ void equipo::generarPlantilla()
 {
     numJugadores = 26;
     plantilla = new jugador[numJugadores];
+    medidor.sumarMemoria(sizeof(jugador) * numJugadores);
     for (int i = 0; i < numJugadores; i++)
     {
         string nombre = "nombre" + to_string(i + 1);
@@ -140,6 +168,20 @@ void equipo::generarPlantilla()
         plantilla[i].setNombre(nombre.c_str());
         plantilla[i].setApellido(apellido.c_str());
         plantilla[i].setNumeroCamiseta(i + 1);
+        plantilla[i].getStats().setGoles(0);
+    }
+
+    // Distribuir los goles historicos del equipo uniformemente entre los jugadores
+    int golesHistoricos = statsHistoricas.getGolesFavor();
+    if (golesHistoricos > 0)
+    {
+        int golesPorJugador = golesHistoricos / numJugadores;
+        int golesRestantes  = golesHistoricos % numJugadores;
+        for (int i = 0; i < numJugadores; i++)
+        {
+            int golesAsignados = golesPorJugador + (i < golesRestantes ? 1 : 0);
+            plantilla[i].getStats().setGoles(golesAsignados);
+        }
     }
 }
 
