@@ -136,7 +136,7 @@ void fixture::agregarPartido(partido* p)
         medidor.sumarMemoria(sizeof(partido*) * capacidad);
         for (int i = 0; i < numPartidos; i++)
             nuevo[i] = partidos[i];
-        medidor.restarMemoria(sizeof(partido*) * capAnterior);  // resta la capacidad anterior
+        medidor.restarMemoria(sizeof(partido*) * capAnterior);
         delete[] partidos;
         partidos = nuevo;
     }
@@ -218,7 +218,7 @@ void fixture::imprimirGoleadores() const
 {
     cout << "\n";
     cout << string(60, '-') << endl;
-    cout << "  Goleadores — " << nombreEtapa << endl;
+    cout << "  Goleadores " << nombreEtapa << endl;
     cout << string(60, '-') << endl;
 
     for (int i = 0; i < numPartidos; i++)

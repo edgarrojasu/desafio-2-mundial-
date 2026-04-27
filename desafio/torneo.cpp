@@ -14,13 +14,16 @@ torneo::torneo()
 
 torneo::~torneo()
 {
-    medidor.restarMemoria(sizeof(equipo) * numEquipos);
-    medidor.restarMemoria(sizeof(sorteo));
+    if (equipos)
+        medidor.restarMemoria(sizeof(equipo) * 48);
+    if (sorteoGrupos)
+        medidor.restarMemoria(sizeof(sorteo));
     delete[] equipos;
     delete sorteoGrupos;
     for (int i = 0; i < 7; i++)
     {
-        medidor.restarMemoria(sizeof(fixture));
+        if (etapas[i])
+            medidor.restarMemoria(sizeof(fixture));
         delete etapas[i];
     }
 }
@@ -42,13 +45,16 @@ torneo& torneo::operator=(const torneo& otro)
 {
     if (this != &otro)
     {
-        medidor.restarMemoria(sizeof(equipo) * numEquipos);
-        medidor.restarMemoria(sizeof(sorteo));
+        if (equipos)
+            medidor.restarMemoria(sizeof(equipo) * 48);
+        if (sorteoGrupos)
+            medidor.restarMemoria(sizeof(sorteo));
         delete[] equipos;
         delete sorteoGrupos;
         for (int i = 0; i < 7; i++)
         {
-            medidor.restarMemoria(sizeof(fixture));
+            if (etapas[i])
+                medidor.restarMemoria(sizeof(fixture));
             delete etapas[i];
         }
         numEquipos = otro.numEquipos;
@@ -125,6 +131,14 @@ void torneo::simularFaseGrupos()
                     diaAsignado = d;
                 }
             }
+            if (diaAsignado == -1)
+            {
+                for (int d = 0; d < 19 && diaAsignado == -1; d++)
+                {
+                    if (partidosPorDia[d] < 4)
+                        diaAsignado = d;
+                }
+            }
             if (diaAsignado == -1) diaAsignado = 18;
 
             int dia = 20 + diaAsignado;
@@ -189,7 +203,6 @@ void torneo::configurarDieciseisavos()
     equipo* segundos[12];
     equipo* terceros[12];
 
-    // Guardar de que grupo viene cada equipo (indice de grupo)
     int grupoPrimero[12], grupoSegundo[12], grupoTercero[12];
 
     for (int g = 0; g < 12; g++)
@@ -202,7 +215,6 @@ void torneo::configurarDieciseisavos()
         grupoTercero[g]  = g;
     }
 
-    // Ordenar terceros de mejor a peor (para quedarse con los 8 mejores)
     for (int i = 0; i < 11; i++)
     {
         for (int j = 0; j < 11 - i; j++)
@@ -221,10 +233,7 @@ void torneo::configurarDieciseisavos()
             }
         }
     }
-    // Solo los 8 primeros terceros clasifican
-    // terceros[0..7] son los 8 mejores, grupoTercero[0..7] sus grupos de origen
 
-    // Ordenar segundos de peor a mejor (para identificar los 4 peores)
     for (int i = 0; i < 11; i++)
     {
         for (int j = 0; j < 11 - i; j++)
@@ -243,19 +252,13 @@ void torneo::configurarDieciseisavos()
             }
         }
     }
-    // segundos[0..3]  = 4 peores segundos  (enfrentaran a primeros)
-    // segundos[4..11] = 8 mejores segundos (se enfrentan entre si)
 
-    // Lambda para verificar que dos equipos no compartieron grupo
     auto mismoGrupo = [&](int g1, int g2) -> bool { return g1 == g2; };
 
-    // ── Bloque 1: 8 primeros vs 8 mejores terceros ──
-    // Emparejar primero[i] con tercero[j] tal que no sean del mismo grupo
     bool usadoTercero[8] = {false};
     for (int i = 0; i < 8; i++)
     {
         bool asignado = false;
-        // Intentar en orden
         for (int j = 0; j < 8 && !asignado; j++)
         {
             if (!usadoTercero[j] && !mismoGrupo(grupoPrimero[i], grupoTercero[j]))
@@ -271,7 +274,6 @@ void torneo::configurarDieciseisavos()
                 asignado = true;
             }
         }
-        // Si no se encontro pareja valida, usar el primer tercero disponible (fallback)
         if (!asignado)
         {
             for (int j = 0; j < 8 && !asignado; j++)
@@ -292,8 +294,6 @@ void torneo::configurarDieciseisavos()
         }
     }
 
-    // ── Bloque 2: 4 primeros restantes vs 4 peores segundos ──
-    // primeros[8..11] vs segundos[0..3], respetando restriccion de grupo
     bool usadoPeorSegundo[4] = {false};
     for (int i = 8; i < 12; i++)
     {
@@ -333,8 +333,6 @@ void torneo::configurarDieciseisavos()
         }
     }
 
-    // ── Bloque 3: 8 mejores segundos entre si ──
-    // segundos[4..11], emparejar evitando mismo grupo
     bool usadoMejorSegundo[8] = {false};
     for (int i = 4; i < 12; i++)
     {
@@ -358,7 +356,6 @@ void torneo::configurarDieciseisavos()
         }
         if (!asignado)
         {
-            // Fallback: emparejar con el primer disponible
             for (int j = i + 1; j < 12 && !asignado; j++)
             {
                 if (!usadoMejorSegundo[j - 4])
@@ -379,6 +376,7 @@ void torneo::configurarDieciseisavos()
     }
 
     cout << "\n=== Partidos configurados para Dieciseisavos ===" << endl;
+    imprimirTablas();
     for (int i = 0; i < etapas[1]->getNumPartidos(); i++)
     {
         partido* p = etapas[1]->getPartido(i);
@@ -408,7 +406,6 @@ void torneo::simularEtapa(int indice)
 
 void torneo::simularTorneo()
 {
-    medidor.resetear();
     simularEtapa(1);
 
     etapas[2] = new fixture("Octavos de Final");
@@ -514,7 +511,6 @@ void torneo::simularTorneo()
         etapas[6]->agregarPartido(p);
     }
     simularEtapa(6);
-    medidor.imprimir();
 }
 
 void torneo::generarEstadisticas()
@@ -547,10 +543,10 @@ void torneo::generarEstadisticas()
     }
 
     cout << "\n1. Ranking top 4:" << endl;
-    if (campeon)   cout << "  1° " << campeon->getPais() << endl;
-    if (subcampeon)cout << "  2° " << subcampeon->getPais() << endl;
-    if (tercero)   cout << "  3° " << tercero->getPais() << endl;
-    if (cuarto)    cout << "  4° " << cuarto->getPais() << endl;
+    if (campeon)   cout << "  1 " << campeon->getPais() << endl;
+    if (subcampeon)cout << "  2 " << subcampeon->getPais() << endl;
+    if (tercero)   cout << "  3 " << tercero->getPais() << endl;
+    if (cuarto)    cout << "  4 " << cuarto->getPais() << endl;
 
     if (campeon)
     {
@@ -578,7 +574,6 @@ void torneo::generarEstadisticas()
         for (int j = 0; j < equipos[e].getNumJugadores(); j++)
         {
             int g = equipos[e].getPlantilla()[j].getStats().getGoles();
-            // Insertar en el top-3 si supera alguna posicion
             if (g > topGoles[0])
             {
                 topGoles[2]    = topGoles[1];    topEquipo[2]   = topEquipo[1];    topCamiseta[2] = topCamiseta[1];
@@ -608,7 +603,7 @@ void torneo::generarEstadisticas()
         if (topEquipo[i])
             cout << "  " << (i+1) << ". " << topEquipo[i]->getPais()
                  << " camiseta " << topCamiseta[i]
-                 << " — " << topGoles[i] << " goles" << endl;
+                 << topGoles[i] << " goles" << endl;
     }
 
     cout << "\n4. Equipo con mas goles historicos:" << endl;

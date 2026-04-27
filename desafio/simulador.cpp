@@ -150,6 +150,7 @@ void simulador::simular(partido& p, bool permitirEmpate)
     intentos = 0;
     while (golesEq2 < golesEsperados2 && intentos < 1000)
     {
+        medidor.contarIteracion();
         for (int i = 0; i < 11 && golesEq2 < golesEsperados2; i++)
         {
             float prob = (rand() % 10000) / 100.0f;
@@ -198,7 +199,6 @@ void simulador::simular(partido& p, bool permitirEmpate)
             p.getStatsEquipo2().setGolesContra(golesEq1);
             p.getStatsEquipo1().setGolesContra(golesEq2 + 1);
         }
-        // El partido se resolvio en prorroga: marcar flag y asignar 120 minutos
         p.setProrroga(true);
         for (int i = 0; i < 11; i++)
         {

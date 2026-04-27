@@ -4,10 +4,10 @@
 jugador::jugador()
 {
     nombre = new char[1];
-    medidor.sumarMemoria(1);  // 1 byte, no sizeof(1)
+    medidor.sumarMemoria(1);
     nombre[0] = '\0';
     apellido = new char[1];
-    medidor.sumarMemoria(1);  // 1 byte, no sizeof(1)
+    medidor.sumarMemoria(1);
     apellido[0] = '\0';
     numeroCamiseta = 0;
 }

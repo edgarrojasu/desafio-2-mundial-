@@ -106,6 +106,13 @@ equipo& equipo::operator=(const equipo& otro)
         medidor.sumarMemoria(sizeof(jugador) * numJugadores);
         promedioGFHistorico = otro.promedioGFHistorico;
         promedioGCHistorico = otro.promedioGCHistorico;
+        puntosT            = otro.puntosT;
+        diferenciaGolesT   = otro.diferenciaGolesT;
+        partidosGanadosT   = otro.partidosGanadosT;
+        partidosEmpatadosT = otro.partidosEmpatadosT;
+        partidosPerdidosT  = otro.partidosPerdidosT;
+        golesFavorT        = otro.golesFavorT;
+        golesContraT       = otro.golesContraT;
 
         for (int i = 0; i < numJugadores; i++)
         {
@@ -171,7 +178,6 @@ void equipo::generarPlantilla()
         plantilla[i].getStats().setGoles(0);
     }
 
-    // Distribuir los goles historicos del equipo uniformemente entre los jugadores
     int golesHistoricos = statsHistoricas.getGolesFavor();
     if (golesHistoricos > 0)
     {

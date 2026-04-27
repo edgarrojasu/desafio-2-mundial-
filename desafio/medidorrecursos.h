@@ -32,7 +32,6 @@ public:
     friend ostream& operator<<(ostream& os, const medidorrecursos& m);
 };
 
-// instancia global accesible desde cualquier clase
 extern medidorrecursos medidor;
 
 #endif // MEDIDORRECURSOS_H
